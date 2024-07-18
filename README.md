@@ -2,6 +2,8 @@
 
 Guides players to specific points of interest in your game.
 
+![Demo Video](docs/demo.mp4)
+
 ## Files
 
 1. `compass_device.verse`: Contains the main compass device class
