@@ -7,8 +7,16 @@ using { /UnrealEngine.com/Temporary/SpatialMath }
 using { /Verse.org/Colors }
 using { /Verse.org/Assets }
 
+units := enum:
+    KM
+    M
+    CM
+
 compass_device := class(creative_device):
 
+    # The unit of measurement for distance
+    @editable
+    Units : units = units.M
     # The size of the compass texture
     @editable
     CompassTextureSize : float = 45.0
@@ -63,7 +71,7 @@ compass_device := class(creative_device):
     CreateCompassUI(Player : player): void =
         if (PlayerUI := GetPlayerUI[Player]):
             PlayerDistance := GetDistance(Player)
-            DistanceText : text_block = text_block{DefaultText := ToMessage("{PlayerDistance}km"), DefaultTextColor := NamedColors.White}
+            DistanceText : text_block = text_block{DefaultText := ToMessage(GetFormattedDistance(PlayerDistance)), DefaultTextColor := NamedColors.White}
             DirectionTexture : texture_block = texture_block{DefaultImage := North, DefaultDesiredSize := vector2{X := CompassTextureSize, Y := CompassTextureSize}}
 
             CompassStackBox := stack_box:
@@ -89,7 +97,6 @@ compass_device := class(creative_device):
                 set DirectionWidgets[Player] = DirectionTexture
             then:
                 PlayerUI.AddWidget(MyCanvas)
-
 
     # Animates the compass based on the player's location and target location
     AnimateCompass(Player : player)<suspends>: void =
@@ -119,33 +126,37 @@ compass_device := class(creative_device):
                             DistanceText.SetVisibility(widget_visibility.Visible)
                             DirectionWidget.SetVisibility(widget_visibility.Visible)
                             
-                            # Convert distance to kilometers and round to one decimal place
-                            KmDistance := PlayerDistance / 1000.0
-                            if(KmDistanceRounded := (Round[KmDistance * 10.0] * 1.0) / 10.0):
-                                DistanceDisplay := "{ToTruncatedString(KmDistanceRounded, 1)}km"
-                                DistanceText.SetText(ToMessage(DistanceDisplay))
+                            # Convert and display distance based on selected unit
+                            DistanceDisplay := GetFormattedDistance(PlayerDistance)
+                            DistanceText.SetText(ToMessage(DistanceDisplay))
                                 
-                                # Update the compass texture based on the angle difference
-                                DirectionTexture := 
-                                    if (AngleDifference > -22.5 and AngleDifference <= 22.5) then North
-                                    else if (AngleDifference > 22.5 and AngleDifference <= 67.5) then NorthEast
-                                    else if (AngleDifference > 67.5 and AngleDifference <= 112.5) then East
-                                    else if (AngleDifference > 112.5 and AngleDifference <= 157.5) then SouthEast
-                                    else if (AngleDifference > 157.5 or AngleDifference <= -157.5) then South
-                                    else if (AngleDifference > -157.5 and AngleDifference <= -112.5) then SouthWest
-                                    else if (AngleDifference > -112.5 and AngleDifference <= -67.5) then West
-                                    else NorthWest
-                                
-                                # Set the compass texture
-                                DirectionWidget.SetImage(DirectionTexture)
+                            # Update the compass texture based on the angle difference
+                            DirectionTexture := 
+                                if (AngleDifference > -22.5 and AngleDifference <= 22.5) then North
+                                else if (AngleDifference > 22.5 and AngleDifference <= 67.5) then NorthEast
+                                else if (AngleDifference > 67.5 and AngleDifference <= 112.5) then East
+                                else if (AngleDifference > 112.5 and AngleDifference <= 157.5) then SouthEast
+                                else if (AngleDifference > 157.5 or AngleDifference <= -157.5) then South
+                                else if (AngleDifference > -157.5 and AngleDifference <= -112.5) then SouthWest
+                                else if (AngleDifference > -112.5 and AngleDifference <= -67.5) then West
+                                else NorthWest
+                            
+                            # Set the compass texture
+                            DirectionWidget.SetImage(DirectionTexture)
 
     # Get the distance between the player and the target location
-    GetDistance(Player: player): int =
+    GetDistance(Player: player): float =
         if (FortCharacter := Player.GetFortCharacter[], TargetLocation := TargetLocations[Player]):
             PlayerLocation := FortCharacter.GetTransform().Translation
-            if(PlayerDistance := Int[Distance(PlayerLocation, TargetLocation)]):
-                return PlayerDistance
-        return 0
+            return Distance(PlayerLocation, TargetLocation)
+        return 0.0
+
+    # Get formatted distance string based on selected unit
+    GetFormattedDistance(DistanceCM: float): string =
+        case (Units):
+            units.CM => "{ToTruncatedString(DistanceCM, 0)}cm"
+            units.M => "{ToTruncatedString(DistanceCM / 100.0, 1)}m"
+            units.KM => "{ToTruncatedString(DistanceCM / 100000.0, 2)}km"
 
 #############################
 # Helper Functions

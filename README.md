@@ -25,6 +25,7 @@ Demo Video: https://x.com/PercyFNCreative/status/1813989150863073492
 3. **Configure the Compass Device (Optional)**
 
    - Adjust the editable properties as needed:
+     - `Units`: Set the units of measurement (default: units.M)
      - `CompassTextureSize`: Set the size of the compass texture (default: 45.0)
      - `DistanceToHideCompass`: Set the distance at which the compass will hide (default: 300.0)
      - `WidgetPos`: Set the screen position of the compass (default: X:0.5, Y:0.9)
