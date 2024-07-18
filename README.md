@@ -2,7 +2,7 @@
 
 Guides players to specific points of interest in your game.
 
-![Demo Video](docs/demo.mp4)
+Demo Video: https://x.com/PercyFNCreative/status/1813989150863073492
 
 ## Files
 
